@@ -1,5 +1,12 @@
+# -----------------------------------------------------------------------------
+# API image: Express + Prisma (PostgreSQL via @prisma/adapter-pg) + Puppeteer
+# for periodic screenshots of Google Play listing pages.
+# -----------------------------------------------------------------------------
+
 FROM node:20-slim
 
+# Install Chromium and OS libraries Puppeteer needs to run headless Chrome in
+# a minimal Debian image (screenshots of Play Store URLs).
 RUN apt-get update && apt-get install -y \
   chromium \
   fonts-liberation \
@@ -22,22 +29,37 @@ RUN apt-get update && apt-get install -y \
   --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 
+# All following paths are relative to this directory inside the container.
 WORKDIR /app
 
+# Copy the repository (build context should be the monorepo root so pnpm-lock
+# and pnpm-workspace.yaml are available).
 COPY . .
 
+# Activate the pnpm version pinned in package.json (Corepack ships with Node).
 RUN corepack enable
+
+# Docker build has no TTY; pnpm otherwise aborts when it would purge node_modules.
+ENV CI=true
+
+# Install dependencies for the whole workspace; the api package is built via --filter.
 RUN pnpm install
 
+# prisma.config.ts requires DATABASE_URL at config load time. `prisma generate`
+# does not connect to Postgres; a placeholder URL is enough for the compile step.
 ENV DUMMY_DATABASE_URL=postgresql://dummy:dummy@127.0.0.1:5432/dummy
 
-# Monorepo (Railway root = repo): apps/api exists. Single-package (Railway root = apps/api): package lives at /app.
+# Generate Prisma Client and compile TypeScript to dist/.
+# Supports either full monorepo layout (/app/apps/api) or service-only root (/app).
 RUN if [ -f apps/api/package.json ]; then \
       DATABASE_URL="$DUMMY_DATABASE_URL" pnpm --filter api build; \
     else \
       DATABASE_URL="$DUMMY_DATABASE_URL" pnpm run build; \
     fi
 
+# Point Puppeteer at the system Chromium we installed (smaller than bundled Chrome).
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
+# Start: prisma migrate deploy && node dist/server.js (see package.json "start").
+# cd selects the api package folder whether the image was built from monorepo or apps/api only.
 CMD ["sh", "-c", "if [ -f /app/apps/api/package.json ]; then cd /app/apps/api; else cd /app; fi && pnpm start"]

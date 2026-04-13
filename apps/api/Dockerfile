@@ -27,8 +27,11 @@ WORKDIR /app
 COPY . .
 
 RUN corepack enable
-
 RUN pnpm install
+
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
+
+RUN pnpm --filter api exec prisma generate
 
 RUN pnpm --filter api build
 
@@ -36,4 +39,4 @@ WORKDIR /app/apps/api
 
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
-CMD ["sh", "-c", "pnpm --filter api exec prisma generate && node dist/server.js"]
+CMD ["node", "dist/server.js"]

@@ -29,12 +29,11 @@ COPY . .
 RUN corepack enable
 RUN pnpm install
 
-# 👉 просто заходим в api и работаем напрямую
 WORKDIR /app/apps/api
 
-RUN pnpm prisma generate
+RUN pnpm exec prisma generate
 RUN pnpm build
 
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
-CMD ["sh", "-c", "pnpm prisma migrate deploy && node dist/server.js"]
+CMD ["sh", "-c", "pnpm exec prisma migrate deploy && node dist/server.js"]

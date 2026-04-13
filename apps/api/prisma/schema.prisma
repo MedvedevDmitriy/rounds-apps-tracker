@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model App {
+  id          String       @id @default(cuid())
+  appId       String       @unique
+  url         String
+  title       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  screenshots Screenshot[]
+}
+
+model Screenshot {
+  id         String   @id @default(cuid())
+  appId      String
+  imagePath  String
+  capturedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  app App @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  @@index([appId, capturedAt])
+}

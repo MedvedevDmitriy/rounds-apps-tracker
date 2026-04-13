@@ -9,7 +9,6 @@ import {
   captureScreenshotForApp,
 } from "../services/app.services";
 import { takeScreenshot } from "../services/screenshot.service";
-// TEST worker
 import { runScreenshotCycleNow } from "../workers/screenshot.worker";
 
 const router = Router();
@@ -26,8 +25,7 @@ router.get("/", async (_req: Request, res: Response) => {
   try {
     const apps = await listTrackedApps();
     res.json(apps);
-  } catch (error) {
-    console.error("[GET /apps]", error);
+  } catch {
     res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -47,8 +45,7 @@ router.get("/:id", async (req: Request, res: Response) => {
     }
 
     return res.json(app);
-  } catch (error) {
-    console.error("[GET /apps/:id]", error);
+  } catch {
     return res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -82,7 +79,6 @@ router.post("/", async (req: Request, res: Response) => {
       return res.status(409).json({ message });
     }
 
-    console.error("[POST /apps]", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -105,26 +101,22 @@ router.delete("/:id", async (req: Request, res: Response) => {
       return res.status(404).json({ message: "App not found" });
     }
 
-    console.error("[DELETE /apps/:id]", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 });
 
-// TEST endpoint
-router.post("/test-screenshot", async (req, res) => {
-  const { url } = req.body;
+router.post("/test-screenshot", async (req: Request, res: Response) => {
+  const { url } = req.body as { url?: string };
 
   try {
-    const filePath = await takeScreenshot(url);
+    const filePath = await takeScreenshot(String(url ?? ""));
     return res.json({ filePath });
-  } catch (error) {
-    console.error(error);
+  } catch {
     return res.status(500).json({ message: "Screenshot failed" });
   }
 });
 
-// TEST endpoint
-router.post("/:id/capture", async (req, res) => {
+router.post("/:id/capture", async (req: Request, res: Response) => {
   const id = req.params.id as string;
 
   try {
@@ -141,8 +133,7 @@ router.post("/:id/capture", async (req, res) => {
   }
 });
 
-// TEST endpoint
-router.post("/run-screenshots", async (_req, res) => {
+router.post("/run-screenshots", async (_req: Request, res: Response) => {
   try {
     await runScreenshotCycleNow();
     return res.json({ message: "Screenshot cycle finished" });

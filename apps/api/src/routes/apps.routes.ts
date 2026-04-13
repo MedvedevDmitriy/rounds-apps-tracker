@@ -27,6 +27,7 @@ router.get("/", async (_req: Request, res: Response) => {
     const apps = await listTrackedApps();
     res.json(apps);
   } catch (error) {
+    console.error("[GET /apps]", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -46,7 +47,8 @@ router.get("/:id", async (req: Request, res: Response) => {
     }
 
     return res.json(app);
-  } catch {
+  } catch (error) {
+    console.error("[GET /apps/:id]", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -80,6 +82,7 @@ router.post("/", async (req: Request, res: Response) => {
       return res.status(409).json({ message });
     }
 
+    console.error("[POST /apps]", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -102,6 +105,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
       return res.status(404).json({ message: "App not found" });
     }
 
+    console.error("[DELETE /apps/:id]", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 });

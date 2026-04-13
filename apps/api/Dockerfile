@@ -30,7 +30,7 @@ RUN corepack enable
 
 RUN pnpm install
 
-RUN pnpm --filter api prisma generate
+RUN pnpm --filter api exec prisma generate
 
 RUN pnpm --filter api build
 

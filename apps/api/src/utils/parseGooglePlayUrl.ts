@@ -1,7 +1,9 @@
-export function parseGooglePlayUrl(input: string): {
+type GooglePlayUrlData = {
   url: string;
   appId: string;
-} {
+};
+
+export function parseGooglePlayUrl(input: string): GooglePlayUrlData {
   let parsedUrl: URL;
 
   try {
@@ -27,7 +29,7 @@ export function parseGooglePlayUrl(input: string): {
   }
 
   return {
-    url: input,
+    url: input.trim(),
     appId: appId.trim(),
   };
 }

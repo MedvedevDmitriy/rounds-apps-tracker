@@ -40,4 +40,4 @@ RUN if [ -f apps/api/package.json ]; then \
 
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
-CMD ["sh", "-c", "if [ -f /app/apps/api/package.json ]; then cd /app/apps/api; else cd /app; fi && pnpm exec prisma migrate deploy && node dist/server.js"]
+CMD ["sh", "-c", "if [ -f /app/apps/api/package.json ]; then cd /app/apps/api; else cd /app; fi && pnpm start"]

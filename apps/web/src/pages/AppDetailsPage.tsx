@@ -3,6 +3,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import type { IApp } from "../shared/types";
 import { api } from "../api/client";
 
+const apiOrigin =
+  import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:3000";
+
 function AppDetailsPage() {
   const { id } = useParams<string>();
   const [app, setApp] = useState<IApp>();
@@ -16,7 +19,7 @@ function AppDetailsPage() {
     }
 
     const fetchApp = async () => {
-      const res = await api.get(`apps/${id}`);
+      const res = await api.get(`/apps/${id}`);
       setApp(res.data);
     };
 
@@ -41,7 +44,7 @@ function AppDetailsPage() {
         <div key={s.id} style={{ marginBottom: 20 }}>
           <div>{new Date(s.capturedAt).toLocaleString()}</div>
           <img
-            src={`http://localhost:3000/${s.imagePath}`}
+            src={`${apiOrigin}/${s.imagePath}`}
             alt="screenshot"
             style={{ width: "300px" }}
           />
@@ -53,8 +56,8 @@ function AppDetailsPage() {
         onClick={async () => {
           setLoading(true);
           try {
-            await api.post(`/apps/${id}/capture`);
-            const res = await api.get(`/apps/${id}`);
+            await api.post(`apps/${id}/capture`);
+            const res = await api.get(`apps/${id}`);
             setApp(res.data);
           } catch {
             setError("Failed to capture screenshot");

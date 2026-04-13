@@ -29,14 +29,12 @@ COPY . .
 RUN corepack enable
 RUN pnpm install
 
-ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
-
-RUN pnpm --filter api exec prisma generate
-
-RUN pnpm --filter api build
-
+# 👉 просто заходим в api и работаем напрямую
 WORKDIR /app/apps/api
+
+RUN pnpm prisma generate
+RUN pnpm build
 
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
-CMD ["node", "dist/server.js"]
+CMD ["sh", "-c", "pnpm prisma migrate deploy && node dist/server.js"]

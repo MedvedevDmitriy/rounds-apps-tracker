@@ -29,7 +29,6 @@ COPY . .
 RUN corepack enable
 RUN pnpm install
 
-# 👉 ВАЖНО: prisma из root через filter
 RUN pnpm --filter api exec prisma generate
 RUN pnpm --filter api build
 

@@ -1,31 +1,48 @@
-How the System Works
-Create an API or a dedicated UI screen that will allow users to add / modify which apps to track (e.g., https://play.google.com/store/apps/details?id=com.activision.callofduty.shooter).
+# Rounds Apps Tracker
 
-Using this list of apps added to the system, the system will periodically take screenshots of each app's Google Play listing page and display them to the user on a page in a simple timeline.
+You add Google Play listing URLs; the backend grabs screenshots of those pages on a schedule and the UI shows them in a simple timeline (newest first). Built with Node, React, TypeScript, Postgres, Prisma, Puppeteer.
 
-The user will be able to enter the app monitoring page and view the different screenshots that were taken, seeing what the competitors' apps are changing on their listing page over a period of time, and adjust their marketing strategy accordingly.
+---
 
-Think how to make the app as production-ready as possible.
+## Run it locally (easiest)
 
-Screen Design
-Feel free to design the system screens as you see fit. This isn't a design test, so no need to put too much effort on a pretty UI — as long as the system is usable.
+Need Docker.
 
-App Monitoring Page
-Display the list of taken screenshots, ordered by creation time descending.
-On the top of each screenshot, provide the screenshot time.
-Below is an example layout for reference:
+```bash
+docker compose up --build
+```
 
-App Monitoring Page Example
+Then open **http://localhost:5173** — that’s the app. The API is on **http://localhost:3000** (`/health` checks it’s up). First run applies DB migrations; screenshots are saved under `apps/api/data/`.
 
-Additional Notes
-No need to implement any user management — imagine the system will be used by only one customer for now.
-Tech stack: Please implement the system using Node.js, React, and TypeScript.
+---
 
-Deliverables
-A new GitHub project with the system code.
-Please provide instructions on how to run the system locally.
-Come prepared to present the assignmet in a follow up techincal interview (20 mins technical demo presentation + 20 mins Q&A).
+## Run without Docker
 
-Bonus Points
-Deploy the service to the cloud and provide access to it, along with an explanation of how it was deployed.
-The deployment can be in GCP/AWS or other infrastructure providers.
+Install deps from the repo root: `corepack enable && pnpm install`.
+
+1. Postgres running, `DATABASE_URL` set (see `apps/api/.env.example`).
+2. API: `cd apps/api && pnpm exec prisma migrate deploy && pnpm dev`
+3. Web: `cd apps/web`, copy `.env.example` → `.env` (or set `VITE_API_URL=http://localhost:3000`), then `pnpm dev`
+4. Open **http://localhost:5173**
+
+---
+
+## Env files
+
+- **API:** `apps/api/.env` — mainly `DATABASE_URL`, optional `PORT` (defaults to 3000).
+- **Web:** `apps/web/.env` — `VITE_API_URL` = where the browser should call the API (local: `http://localhost:3000`). For the Docker Compose web image this is set at build in `docker-compose.yml`, not from `.env`.
+
+---
+
+## How it’s deployed (Railway)
+
+There are **two services** from this repo: **API** and **web**, plus managed **Postgres**.
+
+- API: Dockerfile `apps/api/Dockerfile`, env **`DATABASE_URL`** from the DB, **`PORT`** is whatever Railway sets (the app listens on `process.env.PORT`).
+- Web: Dockerfile `apps/web/Dockerfile`, env **`VITE_API_URL`** = your **public API URL** (https://…), set for **build** so Vite bakes it into the bundle. CORS on the API allows your frontend origin.
+
+**What to open in the browser:** the **web** service public URL (your SPA). The API URL is only for API calls from that page, not something you browse for the UI.
+
+---
+
+Rounds take-home — single user, no login.

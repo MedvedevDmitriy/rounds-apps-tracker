@@ -1,12 +1,16 @@
 import { Router, Request, Response } from "express";
 import { Prisma } from "@prisma/client";
+import { z } from "zod";
 import {
   listTrackedApps,
   createTrackedApp,
   deleteTrackedApp,
   getTrackedAppById,
+  captureScreenshotForApp,
 } from "../services/app.services";
-import { z } from "zod";
+import { takeScreenshot } from "../services/screenshot.service";
+// TEST worker
+import { runScreenshotCycleNow } from "../workers/screenshot.worker";
 
 const router = Router();
 
@@ -34,13 +38,17 @@ router.get("/:id", async (req: Request, res: Response) => {
     return res.status(400).json({ message: "Invalid id" });
   }
 
-  const app = await getTrackedAppById(id);
+  try {
+    const app = await getTrackedAppById(id);
 
-  if (!app) {
-    return res.status(404).json({ message: "App not found" });
+    if (!app) {
+      return res.status(404).json({ message: "App not found" });
+    }
+
+    return res.json(app);
+  } catch {
+    return res.status(500).json({ message: "Internal server error" });
   }
-
-  return res.json(app);
 });
 
 router.post("/", async (req: Request, res: Response) => {
@@ -95,6 +103,47 @@ router.delete("/:id", async (req: Request, res: Response) => {
     }
 
     return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// TEST endpoint
+router.post("/test-screenshot", async (req, res) => {
+  const { url } = req.body;
+
+  try {
+    const filePath = await takeScreenshot(url);
+    return res.json({ filePath });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Screenshot failed" });
+  }
+});
+
+// TEST endpoint
+router.post("/:id/capture", async (req, res) => {
+  const id = req.params.id as string;
+
+  try {
+    const result = await captureScreenshotForApp(id);
+    return res.json(result);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+
+    if (message === "App not found") {
+      return res.status(404).json({ message });
+    }
+
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// TEST endpoint
+router.post("/run-screenshots", async (_req, res) => {
+  try {
+    await runScreenshotCycleNow();
+    return res.json({ message: "Screenshot cycle finished" });
+  } catch {
+    return res.status(500).json({ message: "Failed to run screenshot cycle" });
   }
 });
 

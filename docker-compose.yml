@@ -1,8 +1,8 @@
 services:
   db:
     image: postgres:16
-    container_name: rounds_tracker_db
-    restart: unless-stopped
+    container_name: rounds_db
+    restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -11,6 +11,29 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    ports:
+      - "3001:3000"
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/rounds_monitor
+      PORT: 3000
+    depends_on:
+      - db
+    volumes:
+      - ./apps/api/data:/app/apps/api/data
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "5173:3000"
+    depends_on:
+      - api
 
 volumes:
   postgres_data:

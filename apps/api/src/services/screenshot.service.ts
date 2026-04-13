@@ -24,14 +24,15 @@ export async function takeScreenshot(url: string): Promise<string> {
 
     const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.png`;
 
-    const filePath = path.join(dir, fileName);
+    const absolutePath = path.join(dir, fileName);
+    const relativePath = `data/screenshots/${fileName}`;
 
     await page.screenshot({
-      path: filePath,
+      path: absolutePath,
       fullPage: true,
     });
 
-    return filePath;
+    return relativePath;
   } finally {
     await browser.close();
   }

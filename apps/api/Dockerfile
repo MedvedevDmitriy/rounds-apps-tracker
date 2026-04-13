@@ -29,10 +29,10 @@ COPY . .
 RUN corepack enable
 RUN pnpm install
 
-WORKDIR /app/apps/api
+RUN pnpm --filter api exec prisma generate
+RUN pnpm --filter api build
 
-RUN pnpm exec prisma generate
-RUN pnpm build
+WORKDIR /app/apps/api
 
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 

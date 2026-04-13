@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { Prisma } from "@prisma/client";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 import { z } from "zod";
 import {
   listTrackedApps,
@@ -96,7 +96,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
     return res.status(204).send();
   } catch (error) {
     if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error instanceof PrismaClientKnownRequestError &&
       error.code === "P2025"
     ) {
       return res.status(404).json({ message: "App not found" });

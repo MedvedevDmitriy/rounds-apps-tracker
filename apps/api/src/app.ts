@@ -6,7 +6,11 @@ import appsRouter from "./routes/apps.routes";
 
 export const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+  }),
+);
 app.use(express.json());
 console.log("STATIC PATH:", path.join(__dirname, "../data"));
 app.use("/data", express.static(path.join(__dirname, "../data")));

@@ -19,7 +19,9 @@ export async function takeScreenshot(url: string): Promise<string> {
       timeout: 60000,
     });
 
-    const dir = path.join(process.cwd(), "data/screenshots");
+    // Same tree as express.static(path.join(__dirname, "../data")) in app.ts — never
+    // use process.cwd() here (monorepo / Docker cwd can differ and files won’t match URLs).
+    const dir = path.join(__dirname, "../../data/screenshots");
 
     await fs.mkdir(dir, { recursive: true });
 

@@ -1,6 +1,6 @@
 FROM node:20-slim
 
-# puppeteer deps
+# puppeteer deps (ОСТАВЛЯЕМ)
 RUN apt-get update && apt-get install -y \
   chromium \
   fonts-liberation \
@@ -28,13 +28,15 @@ WORKDIR /app
 COPY . .
 
 RUN corepack enable
-RUN pnpm install --frozen-lockfile
+
+# 🔥 ВАЖНО: убрали frozen-lockfile
+RUN pnpm install
+
+# билд через workspace
+RUN pnpm --filter api build
 
 WORKDIR /app/apps/api
 
-RUN pnpm prisma generate
-RUN pnpm build
-
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/server.js"]

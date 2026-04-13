@@ -2,6 +2,8 @@
 
 You add Google Play listing URLs; the backend grabs screenshots of those pages on a schedule and the UI shows them in a simple timeline (newest first). Built with Node, React, TypeScript, Postgres, Prisma, Puppeteer.
 
+**Live app:** [https://apps-tracker.up.railway.app/](https://apps-tracker.up.railway.app/)
+
 ---
 
 ## Run it locally (easiest)
@@ -41,7 +43,7 @@ There are **two services** from this repo: **API** and **web**, plus managed **P
 - API: Dockerfile `apps/api/Dockerfile`, env **`DATABASE_URL`** from the DB, **`PORT`** is whatever Railway sets (the app listens on `process.env.PORT`).
 - Web: Dockerfile `apps/web/Dockerfile`, env **`VITE_API_URL`** = your **public API URL** (https://…), set for **build** so Vite bakes it into the bundle. CORS on the API allows your frontend origin.
 
-**What to open in the browser:** the **web** service public URL (your SPA). The API URL is only for API calls from that page, not something you browse for the UI.
+**What to open in the browser:** the **web** service public URL (your SPA), e.g. [https://apps-tracker.up.railway.app/](https://apps-tracker.up.railway.app/). The API URL is only for API calls from that page, not something you browse for the UI.
 
 ---
 

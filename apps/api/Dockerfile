@@ -30,12 +30,10 @@ RUN corepack enable
 
 RUN pnpm install
 
-RUN pnpm --filter api exec prisma generate
-
 RUN pnpm --filter api build
 
 WORKDIR /app/apps/api
 
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
-CMD ["node", "dist/server.js"]
+CMD ["sh", "-c", "pnpm --filter api exec prisma generate && node dist/server.js"]

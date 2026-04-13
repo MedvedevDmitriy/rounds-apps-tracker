@@ -29,10 +29,15 @@ COPY . .
 RUN corepack enable
 RUN pnpm install
 
-RUN DATABASE_URL="postgresql://dummy:dummy@127.0.0.1:5432/dummy" pnpm --filter api build
+ENV DUMMY_DATABASE_URL=postgresql://dummy:dummy@127.0.0.1:5432/dummy
 
-WORKDIR /app/apps/api
+# Monorepo (Railway root = repo): apps/api exists. Single-package (Railway root = apps/api): package lives at /app.
+RUN if [ -f apps/api/package.json ]; then \
+      DATABASE_URL="$DUMMY_DATABASE_URL" pnpm --filter api build; \
+    else \
+      DATABASE_URL="$DUMMY_DATABASE_URL" pnpm run build; \
+    fi
 
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
-CMD ["sh", "-c", "pnpm exec prisma migrate deploy && node dist/server.js"]
+CMD ["sh", "-c", "if [ -f /app/apps/api/package.json ]; then cd /app/apps/api; else cd /app; fi && pnpm exec prisma migrate deploy && node dist/server.js"]

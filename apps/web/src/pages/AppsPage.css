@@ -12,6 +12,12 @@
   font-size: 0.95rem;
 }
 
+.apps-page__note {
+  margin: calc(var(--space-lg) * -0.5) 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
 .apps-page__empty {
   padding: var(--space);
   text-align: center;

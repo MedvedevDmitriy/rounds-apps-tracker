@@ -15,10 +15,8 @@ export function startScreenshotWorker(intervalMs: number) {
   }
 
   console.log(
-    `[worker] Started, every ${intervalMs / 60000} min (first run now)`,
+    `[worker] Started, interval ${intervalMs / 60000} min (first cycle after that)`,
   );
-
-  void _runScreenshotCycle();
 
   intervalId = setInterval(() => {
     void _runScreenshotCycle();

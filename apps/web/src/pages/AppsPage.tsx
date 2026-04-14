@@ -96,6 +96,10 @@ function AppsPage() {
         <p className="apps-page__lead">
           Paste a Google Play store URL to start capturing listing screenshots.
         </p>
+        <p className="apps-page__note">
+          The system will also capture screenshots periodically for the apps
+          you add here, so you can track listing changes over time.
+        </p>
       </header>
 
       <AddAppForm

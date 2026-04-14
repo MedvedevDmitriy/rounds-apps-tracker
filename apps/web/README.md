@@ -1,8 +1,7 @@
-# Web app (Vite + React)
+# Web
 
-Project-wide documentation (Docker, local dev, env files, deployment) lives in the **[root README](../../README.md)**.
+Vite + React SPA.
 
-**Web-specific notes:**
+**Config:** copy [`.env.example`](.env.example) to `.env` — see the comment there for `VITE_API_URL`.
 
-- **`VITE_API_URL`** — public base URL of the API (no trailing slash). Used at build time for production bundles; in development, set it in `.env` (see [`.env.example`](.env.example)).
-- **Dev server port** — `5173` (see `vite.config.ts`).
+Dev server: http://localhost:5173 (see `vite.config.ts` if the port changes).

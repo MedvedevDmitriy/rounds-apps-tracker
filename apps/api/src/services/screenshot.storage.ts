@@ -16,6 +16,9 @@ export async function tryDeleteScreenshot(relativePath: string) {
   try {
     await fs.unlink(path.join(__dirname, "../..", relativePath));
   } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === "ENOENT") {
+      return;
+    }
     console.error("[screenshot] delete failed", relativePath, e);
   }
 }

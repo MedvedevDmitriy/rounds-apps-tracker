@@ -13,7 +13,6 @@ export interface IApp {
   screenshots: IScreenshot[];
 }
 
-/** GET /apps — screenshot counts only. */
 export interface IAppListItem {
   id: string;
   googlePlayId: string;

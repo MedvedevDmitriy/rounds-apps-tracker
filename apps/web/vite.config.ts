@@ -5,10 +5,11 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true,
-    port: 3000,
+    // Keep API on :3000; Vite default dev port matches docker-compose host mapping (5173:3000 in container).
+    port: 5173,
   },
   preview: {
     host: true,
-    port: 3000,
+    port: 4173,
   },
 });

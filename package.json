@@ -1,10 +1,14 @@
 {
   "name": "rounds-apps-tracker",
   "version": "1.0.0",
+  "private": true,
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compose:up": "docker compose up --build",
+    "dev": "docker compose up -d --wait db && pnpm --parallel --filter api --filter web run dev",
+    "dev:apps": "pnpm --parallel --filter api --filter web run dev"
   },
   "keywords": [],
   "author": "",

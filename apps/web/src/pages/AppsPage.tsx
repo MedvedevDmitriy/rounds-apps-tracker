@@ -1,75 +1,111 @@
-import { useEffect, useState, type ChangeEvent } from "react";
-import { api } from "../api/client";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { IApp } from "../shared/types";
+import { api } from "../api/client";
+import { AddAppForm } from "../components/apps/AddAppForm";
+import { AppCardList } from "../components/apps/AppCardList";
+import { Alert } from "../components/Alert";
+import type { IAppListItem } from "../shared/interfaces";
+import { getApiErrorMessage } from "../utils/apiError";
+import "./AppsPage.css";
 
-async function fetchAppsList(): Promise<IApp[]> {
-  const res = await api.get<IApp[]>("/apps");
+async function fetchAppsList(): Promise<IAppListItem[]> {
+  const res = await api.get<IAppListItem[]>("/apps");
   return res.data;
 }
 
 function AppsPage() {
-  const [apps, setApps] = useState<IApp[]>([]);
-  const [url, setUrl] = useState<string>("");
+  const [apps, setApps] = useState<IAppListItem[]>([]);
+  const [url, setUrl] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const onChangeClick = (e: ChangeEvent<HTMLInputElement>) => {
-    setUrl(e.target.value);
-  };
+  const loadApps = useCallback(async () => {
+    setLoadError(null);
+    setIsLoading(true);
+    try {
+      const next = await fetchAppsList();
+      setApps(next);
+    } catch (e) {
+      setLoadError(getApiErrorMessage(e));
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-  const onClickApp = (id: string) => {
-    navigate(`/apps/${id}`);
-  };
+  useEffect(() => {
+    void loadApps();
+  }, [loadApps]);
 
   const handleAddApp = async () => {
     if (!url.trim()) {
       return;
     }
-
-    await api.post(`/apps`, { url });
-
-    setUrl("");
-    setApps(await fetchAppsList());
+    setError(null);
+    setIsSubmitting(true);
+    try {
+      await api.post(`/apps`, { url });
+      setUrl("");
+      const next = await fetchAppsList();
+      setApps(next);
+      setLoadError(null);
+    } catch (e) {
+      setError(getApiErrorMessage(e));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const next = await fetchAppsList();
-        if (!cancelled) {
-          setApps(next);
-        }
-      } catch {
-        /* ignore */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const showEmptyMessage = !isLoading && !loadError && apps.length === 0;
+  const showList = !isLoading && !loadError && apps.length > 0;
 
   return (
-    <div>
-      <label htmlFor="input-url">Please enter url to track your app</label>
-      <input id="input-url" value={url} type="text" onChange={onChangeClick} />
-      <button onClick={handleAddApp}>Add</button>
-      {apps.length === 0 && <div>No data</div>}
-      {apps && apps.length && (
-        <ul>
-          {apps.map((app) => {
-            return (
-              <li
-                style={{ cursor: "pointer" }}
-                onClick={() => onClickApp(app.id)}
-                key={app.id}
-              >
-                {app.googlePlayId}
-              </li>
-            );
-          })}
-        </ul>
-      )}
+    <div className="stack">
+      <header>
+        <h1 className="apps-page__title">Tracked apps</h1>
+        <p className="apps-page__lead">
+          Paste a Google Play store URL to start capturing listing screenshots.
+        </p>
+      </header>
+
+      <AddAppForm
+        url={url}
+        isSubmitting={isSubmitting}
+        onUrlChange={setUrl}
+        onSubmit={() => void handleAddApp()}
+      />
+
+      {error ? <Alert variant="error">{error}</Alert> : null}
+
+      {isLoading ? <p className="muted text-center">Loading apps…</p> : null}
+
+      {!isLoading && loadError ? (
+        <div className="stack-sm">
+          <Alert variant="error">{loadError}</Alert>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => void loadApps()}
+          >
+            Retry
+          </button>
+        </div>
+      ) : null}
+
+      {showEmptyMessage ? (
+        <p className="apps-page__empty">
+          No apps yet. Add a Play Store URL above.
+        </p>
+      ) : null}
+
+      {showList ? (
+        <AppCardList
+          apps={apps}
+          onOpenApp={(appId) => navigate(`/apps/${appId}`)}
+        />
+      ) : null}
     </div>
   );
 }

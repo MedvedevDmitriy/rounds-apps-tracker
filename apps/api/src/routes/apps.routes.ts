@@ -14,12 +14,13 @@ const router = Router();
 
 const createAppSchema = z.object({
   url: z.string().url(),
+  title: z.union([z.string().max(500), z.null()]).optional(),
 });
 
 const updateAppSchema = z
   .object({
     url: z.string().url().optional(),
-    title: z.string().max(500).optional(),
+    title: z.union([z.string().max(500), z.null()]).optional(),
   })
   .refine((d) => d.url !== undefined || d.title !== undefined, {
     message: "At least one of url or title is required",
@@ -69,7 +70,9 @@ router.post("/", async (req: Request, res: Response) => {
   }
 
   try {
-    const app = await createTrackedApp(parsed.data.url);
+    const app = await createTrackedApp(parsed.data.url, {
+      title: parsed.data.title,
+    });
     return res.status(201).json(app);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
@@ -128,7 +131,8 @@ router.patch("/:id", async (req: Request, res: Response) => {
       message === "Invalid URL" ||
       message === "URL must be a Google Play app URL" ||
       message === "URL must point to a Google Play app details page" ||
-      message === "Google Play app id is missing"
+      message === "Google Play app id is missing" ||
+      message === "URL points to a different Google Play app"
     ) {
       return res.status(400).json({ message });
     }

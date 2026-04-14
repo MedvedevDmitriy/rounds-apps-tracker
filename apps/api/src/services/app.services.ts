@@ -4,13 +4,25 @@ import { parseGooglePlayUrl } from "../utils/parseGooglePlayUrl";
 import { takeScreenshot } from "./screenshot.service";
 import { tryDeleteScreenshot } from "./screenshot.storage";
 
-export async function createTrackedApp(inputUrl: string) {
+export async function createTrackedApp(
+  inputUrl: string,
+  extra?: { title?: string | null },
+) {
   const { url, googlePlayId } = parseGooglePlayUrl(inputUrl);
 
   try {
-    return await prisma.app.create({ data: { googlePlayId, url } });
+    return await prisma.app.create({
+      data: {
+        googlePlayId,
+        url,
+        ...(extra?.title !== undefined ? { title: extra.title } : {}),
+      },
+    });
   } catch (error) {
-    if (error instanceof PrismaClientKnownRequestError && error.code === "P2002") {
+    if (
+      error instanceof PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
       throw new Error("App is already being tracked");
     }
     throw error;
@@ -62,13 +74,17 @@ export async function updateTrackedApp(
     if (title === undefined) {
       throw new Error("Nothing to update");
     }
-    return prisma.app.update({
+    return await prisma.app.update({
       where: { id },
       data: { title },
     });
   }
 
   const { url, googlePlayId } = parseGooglePlayUrl(urlInput);
+
+  if (googlePlayId !== existing.googlePlayId) {
+    throw new Error("URL points to a different Google Play app");
+  }
 
   try {
     return await prisma.app.update({
@@ -80,7 +96,10 @@ export async function updateTrackedApp(
       },
     });
   } catch (error) {
-    if (error instanceof PrismaClientKnownRequestError && error.code === "P2002") {
+    if (
+      error instanceof PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
       throw new Error("App is already being tracked");
     }
     throw error;

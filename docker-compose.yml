@@ -1,7 +1,8 @@
-# Local full stack: Postgres + API + React UI
-# Usage: docker compose up --build
-#   - UI:  http://localhost:5173  (static SPA)
-#   - API: http://localhost:3000  (same port as local `pnpm dev` for api — one mental model)
+# Full stack in containers (review / production-like): Postgres + API + React UI.
+#   pnpm compose:up   or   docker compose up --build
+#   UI: http://localhost:5173   API: http://localhost:3000
+#
+# Local dev (hot reload): Postgres in Docker, API + Vite on the host — see root `pnpm dev`.
 
 services:
   db:

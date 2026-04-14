@@ -170,6 +170,10 @@ router.delete("/:id", async (req: Request, res: Response) => {
 router.post("/:id/capture", async (req: Request, res: Response) => {
   const id = req.params.id as string;
 
+  if (!isValidId(id)) {
+    return res.status(400).json({ message: "Invalid id" });
+  }
+
   try {
     const result = await captureScreenshotForApp(id);
     return res.json(result);

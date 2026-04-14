@@ -5,10 +5,12 @@ import AppDetailsPage from "./pages/AppDetailsPage";
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<AppsPage />}></Route>
-        <Route path="/apps/:id" element={<AppDetailsPage />}></Route>
-      </Routes>
+      <div className="page-shell">
+        <Routes>
+          <Route path="/" element={<AppsPage />} />
+          <Route path="/apps/:id" element={<AppDetailsPage />} />
+        </Routes>
+      </div>
     </BrowserRouter>
   );
 }

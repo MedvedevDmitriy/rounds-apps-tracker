@@ -1,0 +1,67 @@
+.apps-page__title {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.35rem, 4vw, 1.6rem);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.apps-page__lead {
+  margin: 0 0 var(--space-lg);
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+.apps-page__empty {
+  padding: var(--space);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius);
+}
+
+.app-grid {
+  display: grid;
+  gap: var(--space);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.app-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: var(--space);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.app-card__id {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  word-break: break-all;
+  font-weight: 600;
+}
+
+.app-card__title {
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.app-card__meta {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.app-card__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: auto;
+  padding-top: 0.25rem;
+}

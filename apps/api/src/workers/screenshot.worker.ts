@@ -3,12 +3,23 @@ import {
   captureScreenshotForApp,
 } from "../services/app.services";
 
-const SCREENSHOT_INTERVAL_MS = 1000 * 60 * 30;
+export function startScreenshotWorker(intervalMs: number) {
+  let intervalId: NodeJS.Timeout | null = null;
 
-let isRunning = false;
-let intervalId: NodeJS.Timeout | null = null;
+  if (intervalId) {
+    return;
+  }
 
-async function runScreenshotCycle() {
+  intervalId = setInterval(() => {
+    _runScreenshotCycle();
+  }, intervalMs);
+
+  console.log(`[worker] Started, every ${intervalMs / 60000} min`);
+}
+
+async function _runScreenshotCycle() {
+  let isRunning = false;
+
   if (isRunning) {
     console.log(
       "[worker] Previous screenshot cycle is still running, skipping",
@@ -26,7 +37,7 @@ async function runScreenshotCycle() {
     for (const app of apps) {
       try {
         console.log(
-          `[worker] Capturing screenshot for app ${app.id} (${app.appId})`,
+          `[worker] Capturing screenshot for app ${app.id} (${app.googlePlayId})`,
         );
         await captureScreenshotForApp(app.id);
       } catch (error) {
@@ -43,22 +54,4 @@ async function runScreenshotCycle() {
   } finally {
     isRunning = false;
   }
-}
-
-export function startScreenshotWorker() {
-  if (intervalId) {
-    return;
-  }
-
-  intervalId = setInterval(() => {
-    void runScreenshotCycle();
-  }, SCREENSHOT_INTERVAL_MS);
-
-  console.log(
-    `[worker] Screenshot worker started. Interval: ${SCREENSHOT_INTERVAL_MS / 1000 / 60} minutes`,
-  );
-}
-
-export async function runScreenshotCycleNow() {
-  await runScreenshotCycle();
 }

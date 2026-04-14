@@ -39,7 +39,7 @@ export async function takeScreenshot(url: string): Promise<string> {
 
     await page.screenshot({
       path: absolutePath,
-      fullPage: true,
+      fullPage: false,
     });
 
     return relativePath;

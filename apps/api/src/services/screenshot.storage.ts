@@ -5,7 +5,9 @@ const dir = path.join(__dirname, "../../data/screenshots");
 
 export async function newScreenshotPaths() {
   await fs.mkdir(dir, { recursive: true });
+
   const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.png`;
+
   return {
     relativePath: `data/screenshots/${fileName}`,
     absolutePath: path.join(dir, fileName),

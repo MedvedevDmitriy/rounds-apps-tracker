@@ -18,6 +18,7 @@ function AppsPage() {
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingAppId, setDeletingAppId] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -55,6 +56,32 @@ function AppsPage() {
       setError(getApiErrorMessage(e));
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteApp = async (app: IAppListItem) => {
+    if (deletingAppId) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Delete tracked app ${app.googlePlayId}? This will remove the app and its saved screenshots.`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setError(null);
+    setDeletingAppId(app.id);
+
+    try {
+      await api.delete(`/apps/${app.id}`);
+      setApps((current) => current.filter((item) => item.id !== app.id));
+    } catch (e) {
+      setError(getApiErrorMessage(e));
+    } finally {
+      setDeletingAppId(null);
     }
   };
 
@@ -106,7 +133,9 @@ function AppsPage() {
       {showList ? (
         <AppCardList
           apps={apps}
+          deletingAppId={deletingAppId}
           onOpenApp={(appId) => navigate(`/apps/${appId}`)}
+          onDeleteApp={(app) => void handleDeleteApp(app)}
         />
       ) : null}
     </div>

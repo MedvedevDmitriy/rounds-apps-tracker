@@ -61,6 +61,7 @@
 
 .app-card__actions {
   display: flex;
+  gap: 0.5rem;
   justify-content: flex-end;
   margin-top: auto;
   padding-top: 0.25rem;

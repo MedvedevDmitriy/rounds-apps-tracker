@@ -7,6 +7,10 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    # prisma generate runs on pnpm install (prepare); prisma.config.ts requires DATABASE_URL.
+    # Placeholder only — no DB connection is made at generate time.
+    env:
+      DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci
 
     steps:
       - uses: actions/checkout@v4

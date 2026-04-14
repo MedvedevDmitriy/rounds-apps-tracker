@@ -91,16 +91,12 @@ export function AppEditForm({
           </div>
         </Alert>
       ) : null}
-      {editError ? (
-        <Alert variant="error">{editError}</Alert>
-      ) : null}
+      {editError ? <Alert variant="error">{editError}</Alert> : null}
       <div className="form-actions">
         <button
           type="submit"
           className="btn btn-primary"
-          disabled={
-            isSubmitting || !editUrl.trim() || differentAppPrompt
-          }
+          disabled={isSubmitting || !editUrl.trim() || differentAppPrompt}
         >
           {isSubmitting ? "Saving…" : "Save"}
         </button>

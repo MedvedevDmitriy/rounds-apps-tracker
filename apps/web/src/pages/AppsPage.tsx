@@ -58,7 +58,8 @@ function AppsPage() {
     }
   };
 
-  const showEmptyMessage = !isLoading && !loadError && apps.length === 0;
+  const showEmptyMessage =
+    !isLoading && !loadError && apps.length === 0;
   const showList = !isLoading && !loadError && apps.length > 0;
 
   return (
@@ -79,7 +80,9 @@ function AppsPage() {
 
       {error ? <Alert variant="error">{error}</Alert> : null}
 
-      {isLoading ? <p className="muted text-center">Loading apps…</p> : null}
+      {isLoading ? (
+        <p className="muted text-center">Loading apps…</p>
+      ) : null}
 
       {!isLoading && loadError ? (
         <div className="stack-sm">

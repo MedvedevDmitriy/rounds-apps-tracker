@@ -10,7 +10,11 @@ export function AppCardList({ apps, onOpenApp }: AppCardListProps) {
   return (
     <ul className="app-grid" aria-label="Tracked apps">
       {apps.map((app) => (
-        <AppCard key={app.id} app={app} onOpen={() => onOpenApp(app.id)} />
+        <AppCard
+          key={app.id}
+          app={app}
+          onOpen={() => onOpenApp(app.id)}
+        />
       ))}
     </ul>
   );

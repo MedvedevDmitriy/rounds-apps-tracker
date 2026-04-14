@@ -42,19 +42,20 @@ RUN corepack enable
 # Docker build has no TTY; pnpm otherwise aborts when it would purge node_modules.
 ENV CI=true
 
+# prisma.config.ts reads DATABASE_URL when `prisma generate` runs. That happens
+# during `pnpm install` via the api package "prepare" script — before any real DB exists.
+# A placeholder is enough; no connection is made at generate time.
+ENV DATABASE_URL=postgresql://dummy:dummy@127.0.0.1:5432/dummy
+
 # Install dependencies for the whole workspace; the api package is built via --filter.
 RUN pnpm install
-
-# prisma.config.ts requires DATABASE_URL at config load time. `prisma generate`
-# does not connect to Postgres; a placeholder URL is enough for the compile step.
-ENV DUMMY_DATABASE_URL=postgresql://dummy:dummy@127.0.0.1:5432/dummy
 
 # Generate Prisma Client and compile TypeScript to dist/.
 # Supports either full monorepo layout (/app/apps/api) or service-only root (/app).
 RUN if [ -f apps/api/package.json ]; then \
-      DATABASE_URL="$DUMMY_DATABASE_URL" pnpm --filter api build; \
+      pnpm --filter api build; \
     else \
-      DATABASE_URL="$DUMMY_DATABASE_URL" pnpm run build; \
+      pnpm run build; \
     fi
 
 # Point Puppeteer at the system Chromium we installed (smaller than bundled Chrome).

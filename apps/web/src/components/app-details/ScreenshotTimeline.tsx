@@ -14,7 +14,10 @@ export function ScreenshotTimeline({
   }
 
   return (
-    <section className="app-details__timeline" aria-label="Screenshot history">
+    <section
+      className="app-details__timeline"
+      aria-label="Screenshot history"
+    >
       {screenshots.map((s) => (
         <article key={s.id} className="timeline-card">
           <div className="timeline-card__meta">

@@ -336,7 +336,10 @@ function AppDetailsPage() {
         </p>
       ) : null}
 
-      <ScreenshotTimeline screenshots={screenshots} imageBaseUrl={apiOrigin} />
+      <ScreenshotTimeline
+        screenshots={screenshots}
+        imageBaseUrl={apiOrigin}
+      />
     </div>
   );
 }

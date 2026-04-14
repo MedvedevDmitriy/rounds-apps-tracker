@@ -15,6 +15,10 @@ RUN corepack enable
 # Docker build has no TTY; pnpm otherwise aborts when it would purge node_modules.
 ENV CI=true
 
+# Monorepo install runs api's `prepare` (prisma generate), which loads prisma.config.ts
+# and requires DATABASE_URL even when building only the web image.
+ENV DATABASE_URL=postgresql://dummy:dummy@127.0.0.1:5432/dummy
+
 # Install workspace dependencies so we can run `pnpm --filter web build`.
 RUN pnpm install
 

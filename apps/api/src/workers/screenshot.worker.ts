@@ -3,31 +3,37 @@ import {
   captureScreenshotForApp,
 } from "../services/app.services";
 
-export function startScreenshotWorker(intervalMs: number) {
-  let intervalId: NodeJS.Timeout | null = null;
+let cycleRunning = false;
+let intervalId: NodeJS.Timeout | null = null;
 
-  if (intervalId) {
+export function startScreenshotWorker(intervalMs: number) {
+  if (intervalId !== null) {
+    console.warn(
+      "[worker] Already started, ignoring duplicate startScreenshotWorker()",
+    );
     return;
   }
 
-  intervalId = setInterval(() => {
-    _runScreenshotCycle();
-  }, intervalMs);
+  console.log(
+    `[worker] Started, every ${intervalMs / 60000} min (first run now)`,
+  );
 
-  console.log(`[worker] Started, every ${intervalMs / 60000} min`);
+  void _runScreenshotCycle();
+
+  intervalId = setInterval(() => {
+    void _runScreenshotCycle();
+  }, intervalMs);
 }
 
 async function _runScreenshotCycle() {
-  let isRunning = false;
-
-  if (isRunning) {
+  if (cycleRunning) {
     console.log(
       "[worker] Previous screenshot cycle is still running, skipping",
     );
     return;
   }
 
-  isRunning = true;
+  cycleRunning = true;
 
   try {
     const apps = await listAppsForScreenshotJob();
@@ -52,6 +58,6 @@ async function _runScreenshotCycle() {
   } catch (error) {
     console.error("[worker] Screenshot cycle failed", error);
   } finally {
-    isRunning = false;
+    cycleRunning = false;
   }
 }

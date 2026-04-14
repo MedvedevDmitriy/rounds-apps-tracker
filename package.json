@@ -7,8 +7,7 @@
   "scripts": {
     "test": "pnpm --filter api test",
     "compose:up": "docker compose up --build",
-    "dev": "docker compose up -d --wait db && pnpm --parallel --filter api --filter web run dev",
-    "dev:apps": "pnpm --parallel --filter api --filter web run dev"
+    "dev": "docker compose up -d --wait db && pnpm --parallel --filter api --filter web run dev"
   },
   "keywords": [],
   "author": "",

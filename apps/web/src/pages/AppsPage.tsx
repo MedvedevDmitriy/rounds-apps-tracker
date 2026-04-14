@@ -3,15 +3,15 @@ import { api } from "../api/client";
 import { useNavigate } from "react-router-dom";
 import type { IApp } from "../shared/types";
 
+async function fetchAppsList(): Promise<IApp[]> {
+  const res = await api.get<IApp[]>("/apps");
+  return res.data;
+}
+
 function AppsPage() {
   const [apps, setApps] = useState<IApp[]>([]);
   const [url, setUrl] = useState<string>("");
   const navigate = useNavigate();
-
-  const fetchApps = async () => {
-    const res = await api.get("/apps");
-    setApps(res.data);
-  };
 
   const onChangeClick = (e: ChangeEvent<HTMLInputElement>) => {
     setUrl(e.target.value);
@@ -29,11 +29,24 @@ function AppsPage() {
     await api.post(`/apps`, { url });
 
     setUrl("");
-    fetchApps();
+    setApps(await fetchAppsList());
   };
 
   useEffect(() => {
-    fetchApps();
+    let cancelled = false;
+    void (async () => {
+      try {
+        const next = await fetchAppsList();
+        if (!cancelled) {
+          setApps(next);
+        }
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
@@ -51,7 +64,7 @@ function AppsPage() {
                 onClick={() => onClickApp(app.id)}
                 key={app.id}
               >
-                {app.appId}
+                {app.googlePlayId}
               </li>
             );
           })}

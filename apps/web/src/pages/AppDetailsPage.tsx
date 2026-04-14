@@ -18,12 +18,20 @@ function AppDetailsPage() {
       return;
     }
 
-    const fetchApp = async () => {
-      const res = await api.get(`/apps/${id}`);
-      setApp(res.data);
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await api.get<IApp>(`/apps/${id}`);
+        if (!cancelled) {
+          setApp(res.data);
+        }
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
     };
-
-    fetchApp();
   }, [id]);
 
   if (!app) {
@@ -36,7 +44,7 @@ function AppDetailsPage() {
 
   return (
     <div>
-      <h2>{app.appId}</h2>
+      <h2>{app.googlePlayId}</h2>
       <button onClick={() => navigate("/")}>← Back</button>
       {app.screenshots.length === 0 && <div>No screenshots yet</div>}
 
@@ -56,8 +64,8 @@ function AppDetailsPage() {
         onClick={async () => {
           setLoading(true);
           try {
-            await api.post(`apps/${id}/capture`);
-            const res = await api.get(`apps/${id}`);
+            await api.post(`/apps/${id}/capture`);
+            const res = await api.get<IApp>(`/apps/${id}`);
             setApp(res.data);
           } catch {
             setError("Failed to capture screenshot");

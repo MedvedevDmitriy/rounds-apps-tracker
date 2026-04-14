@@ -1,34 +1,41 @@
 import puppeteer from "puppeteer";
-import path from "path";
-import fs from "fs/promises";
+import { getScreenshotConfig } from "../config/screenshot";
+import { applyPlayStoreLocaleParams } from "../utils/playStoreCaptureUrl";
+import { newScreenshotPaths } from "./screenshot.storage";
 
 export async function takeScreenshot(url: string): Promise<string> {
+  const {
+    executablePath,
+    viewportWidth,
+    viewportHeight,
+    playStoreHl,
+    playStoreGl,
+    acceptLanguage,
+  } = getScreenshotConfig();
+
+  const captureUrl = applyPlayStoreLocaleParams(url, playStoreHl, playStoreGl);
+
   const browser = await puppeteer.launch({
     headless: true,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+    executablePath,
   });
 
   try {
     const page = await browser.newPage();
 
-    await page.setViewport({ width: 1440, height: 1200 });
+    await page.setViewport({ width: viewportWidth, height: viewportHeight });
 
-    await page.goto(url, {
+    await page.setExtraHTTPHeaders({
+      "Accept-Language": acceptLanguage,
+    });
+
+    await page.goto(captureUrl, {
       waitUntil: "networkidle2",
       timeout: 60000,
     });
 
-    // Same tree as express.static(path.join(__dirname, "../data")) in app.ts — never
-    // use process.cwd() here (monorepo / Docker cwd can differ and files won’t match URLs).
-    const dir = path.join(__dirname, "../../data/screenshots");
-
-    await fs.mkdir(dir, { recursive: true });
-
-    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.png`;
-
-    const absolutePath = path.join(dir, fileName);
-    const relativePath = `data/screenshots/${fileName}`;
+    const { relativePath, absolutePath } = await newScreenshotPaths();
 
     await page.screenshot({
       path: absolutePath,

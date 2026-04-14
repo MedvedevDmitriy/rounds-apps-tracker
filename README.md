@@ -1,50 +1,24 @@
 # Rounds Apps Tracker
 
-You add Google Play listing URLs; the backend grabs screenshots of those pages on a schedule and the UI shows them in a simple timeline (newest first). Built with Node, React, TypeScript, Postgres, Prisma, Puppeteer.
+You add Google Play listing URLs; the backend takes screenshots on a schedule and on demand (Puppeteer), and the UI shows a feed (newest first). Stack: Node, React, TypeScript, Postgres, Prisma.
 
-**Live app:** [https://apps-tracker.up.railway.app/](https://apps-tracker.up.railway.app/)
+**Demo:** [https://apps-tracker.up.railway.app/](https://apps-tracker.up.railway.app/)
 
----
+## Local
 
-## Run it locally (easiest)
+**Docker:** from the repo root, `docker compose up --build` → UI [http://localhost:5173](http://localhost:5173), API [http://localhost:3000](http://localhost:3000) (`GET /health`). Screenshots are stored under `apps/api/data/`.
 
-Need Docker.
+**Without Docker:** `pnpm install` at the repo root. Copy `apps/api/.env.example` → `apps/api/.env` and `apps/web/.env.example` → `apps/web/.env`, run Postgres, then `cd apps/api && pnpm exec prisma migrate deploy && pnpm dev` and in another terminal `cd apps/web && pnpm dev`.
 
-```bash
-docker compose up --build
-```
+API tests: `pnpm --filter api test`.
 
-Then open **http://localhost:5173** — that’s the app. The API is on **http://localhost:3000** (`/health` checks it’s up). First run applies DB migrations; screenshots are saved under `apps/api/data/`.
+## Deploy
 
----
+On **Railway**: two services from this repo (**api** and **web**) plus Postgres. Dockerfiles: `apps/api/Dockerfile`, `apps/web/Dockerfile`. Open the **web** service public URL in the browser; the API URL is only for requests from the frontend.
 
-## Run without Docker
+## API and config
 
-Install deps from the repo root: `corepack enable && pnpm install`.
+- **Routes:** `POST /apps` (body: Google Play URL), `GET /apps`, `GET /apps/:id`, `PATCH /apps/:id` (optional `url` / `title`), `DELETE /apps/:id`, `POST /apps/:id/capture`, `GET /health`.
+- **Environment:** see `apps/api/.env.example` and `apps/web/.env.example` — copy to `.env` and adjust if needed.
 
-1. Postgres running, `DATABASE_URL` set (see `apps/api/.env.example`).
-2. API: `cd apps/api && pnpm exec prisma migrate deploy && pnpm dev`
-3. Web: `cd apps/web`, copy `.env.example` → `.env` (or set `VITE_API_URL=http://localhost:3000`), then `pnpm dev`
-4. Open **http://localhost:5173**
-
----
-
-## Env files
-
-- **API:** `apps/api/.env` — mainly `DATABASE_URL`, optional `PORT` (defaults to 3000).
-- **Web:** `apps/web/.env` — `VITE_API_URL` = where the browser should call the API (local: `http://localhost:3000`). For the Docker Compose web image this is set at build in `docker-compose.yml`, not from `.env`.
-
----
-
-## How it’s deployed (Railway)
-
-There are **two services** from this repo: **API** and **web**, plus managed **Postgres**.
-
-- API: Dockerfile `apps/api/Dockerfile`, env **`DATABASE_URL`** from the DB, **`PORT`** is whatever Railway sets (the app listens on `process.env.PORT`).
-- Web: Dockerfile `apps/web/Dockerfile`, env **`VITE_API_URL`** = your **public API URL** (https://…), set for **build** so Vite bakes it into the bundle. CORS on the API allows your frontend origin.
-
-**What to open in the browser:** the **web** service public URL (your SPA), e.g. [https://apps-tracker.up.railway.app/](https://apps-tracker.up.railway.app/). The API URL is only for API calls from that page, not something you browse for the UI.
-
----
-
-Rounds take-home — single user, no login.
+Single user, no login (take-home).

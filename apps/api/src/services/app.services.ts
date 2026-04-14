@@ -1,19 +1,20 @@
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 import { prisma } from "../lib/prisma";
 import { parseGooglePlayUrl } from "../utils/parseGooglePlayUrl";
 import { takeScreenshot } from "./screenshot.service";
+import { tryDeleteScreenshot } from "./screenshot.storage";
 
 export async function createTrackedApp(inputUrl: string) {
-  const { url, appId } = parseGooglePlayUrl(inputUrl);
+  const { url, googlePlayId } = parseGooglePlayUrl(inputUrl);
 
-  const existingApp = await prisma.app.findUnique({ where: { appId } });
-
-  if (existingApp) {
-    throw new Error("App is already being tracked");
+  try {
+    return await prisma.app.create({ data: { googlePlayId, url } });
+  } catch (error) {
+    if (error instanceof PrismaClientKnownRequestError && error.code === "P2002") {
+      throw new Error("App is already being tracked");
+    }
+    throw error;
   }
-
-  const app = await prisma.app.create({ data: { appId, url } });
-
-  return app;
 }
 
 export async function listTrackedApps() {
@@ -46,8 +47,65 @@ export async function getTrackedAppById(id: string) {
   return app;
 }
 
-export async function deleteTrackedApp(id: string) {
+export async function updateTrackedApp(
+  id: string,
+  patch: { url?: string; title?: string | null },
+) {
+  const existing = await prisma.app.findUnique({ where: { id } });
+  if (!existing) {
+    throw new Error("App not found");
+  }
+
+  const { url: urlInput, title } = patch;
+
+  if (urlInput === undefined) {
+    if (title === undefined) {
+      throw new Error("Nothing to update");
+    }
+    return prisma.app.update({
+      where: { id },
+      data: { title },
+    });
+  }
+
+  const { url, googlePlayId } = parseGooglePlayUrl(urlInput);
+
+  try {
+    return await prisma.app.update({
+      where: { id },
+      data: {
+        googlePlayId,
+        url,
+        ...(title !== undefined ? { title } : {}),
+      },
+    });
+  } catch (error) {
+    if (error instanceof PrismaClientKnownRequestError && error.code === "P2002") {
+      throw new Error("App is already being tracked");
+    }
+    throw error;
+  }
+}
+
+async function deleteTrackedAppFromDb(id: string): Promise<string[]> {
+  const screenshotRows = await prisma.screenshot.findMany({
+    where: { appId: id },
+    select: { imagePath: true },
+  });
+  const imagePaths = screenshotRows.map((row) => row.imagePath);
   await prisma.app.delete({ where: { id } });
+  return imagePaths;
+}
+
+async function deleteScreenshotFilesFromDisk(imagePaths: string[]) {
+  for (const imagePath of imagePaths) {
+    await tryDeleteScreenshot(imagePath);
+  }
+}
+
+export async function deleteTrackedApp(id: string) {
+  const imagePaths = await deleteTrackedAppFromDb(id);
+  await deleteScreenshotFilesFromDisk(imagePaths);
 }
 
 export async function captureScreenshotForApp(id: string) {
@@ -76,7 +134,8 @@ export async function captureScreenshotForApp(id: string) {
     });
 
     return screenshot;
-  } catch (error) {
+  } catch {
+    await tryDeleteScreenshot(imagePath);
     throw new Error("Failed to save screenshot");
   }
 }
@@ -88,7 +147,7 @@ export async function listAppsForScreenshotJob() {
     },
     select: {
       id: true,
-      appId: true,
+      googlePlayId: true,
       url: true,
     },
   });

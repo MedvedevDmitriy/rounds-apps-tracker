@@ -7,13 +7,13 @@ datasource db {
 }
 
 model App {
-  id          String       @id @default(cuid())
-  appId       String       @unique
-  url         String
-  title       String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  screenshots Screenshot[]
+  id             String       @id @default(cuid())
+  googlePlayId   String       @unique
+  url            String
+  title          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  screenshots    Screenshot[]
 }
 
 model Screenshot {

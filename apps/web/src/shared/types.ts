@@ -7,6 +7,7 @@ interface IScreenshot {
 
 export interface IApp {
   id: string;
-  appId: string;
+  googlePlayId: string;
+  title?: string | null;
   screenshots: IScreenshot[];
 }

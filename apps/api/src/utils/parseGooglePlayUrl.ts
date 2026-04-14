@@ -1,6 +1,6 @@
 type GooglePlayUrlData = {
   url: string;
-  appId: string;
+  googlePlayId: string;
 };
 
 export function parseGooglePlayUrl(input: string): GooglePlayUrlData {
@@ -22,14 +22,14 @@ export function parseGooglePlayUrl(input: string): GooglePlayUrlData {
     throw new Error("URL must point to a Google Play app details page");
   }
 
-  const appId = parsedUrl.searchParams.get("id");
+  const packageName = parsedUrl.searchParams.get("id");
 
-  if (!appId || !appId.trim()) {
+  if (!packageName || !packageName.trim()) {
     throw new Error("Google Play app id is missing");
   }
 
   return {
     url: input.trim(),
-    appId: appId.trim(),
+    googlePlayId: packageName.trim(),
   };
 }
